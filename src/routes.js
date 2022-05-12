@@ -32,7 +32,7 @@ const PrivateRoute = ({ component: Component, roles, ...rest }) => (
 
 const routes = [
 	// auth
-	{ path: "/login", name: "Login", component: Login, route: Route,  exact: true },
+	{ path: "/login", name: "Login", component: Login, route: Route, exact: true },
 	// home
 	// { path: "/home", name: "Home", component Home, route: Route, exact: true },
 ]

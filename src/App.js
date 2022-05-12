@@ -2,6 +2,7 @@ import React, { Component, Suspense } from 'react';
 import { BrowserRouter, Routes } from 'react-router-dom';
 import { routes } from './routes';
 import Loadable from 'react-loadable';
+import TASLoading from './components/TASLoading/TASLoading';
 
 // setup fake backend
 import { configureFakeBackend } from './helpers/fake-backend';
@@ -11,20 +12,21 @@ import { isUserAuthenticated } from './helpers/authUtils';
 import './styles/index.scss';
 
 // make component loading later
-const loading = () => <div></div>
+const loading = () => TASLoading()
 
 // All layouts/containers
 const NonAuthLayout = Loadable({
+  delay: 500000,
   loader: () => import('./components/NonAuthLayout'),
   render(loaded, props) {
     let Component = loaded.default;
     return <Component {...props} />;
   },
-  loading
+  loading,
 });
 
 const AuthLayout = Loadable({
-  loader: () => import('./components/AuthLayout'),
+  loader: () => import('./components/AuthLayout/AuthLayout'),
   render(loaded, props) {
     let Component = loaded.default;
     return <Component {...props} />;

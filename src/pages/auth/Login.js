@@ -4,6 +4,7 @@ import { Form, Input, Button, Checkbox } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import './Login.scss';
 import 'antd/dist/antd.css';
+import CoreService from '../../services/CoreService';
 
 export default function Login() {
   const [isMounted, setIsMounted] = useState(false);
@@ -79,7 +80,6 @@ export default function Login() {
           Or <a href="">register now!</a>
         </Form.Item>
       </Form>
-
     </div >
 
   )

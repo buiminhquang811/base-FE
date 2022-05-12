@@ -7,9 +7,12 @@ class NonAuthLayout extends Component {
 	render() {
 		const children = this.props.children || null;
 		return (
-			<Suspense fallback={loading()}>
+			// <Suspense fallback={loading()}>
+			<>
 				{children}
-			</Suspense>
+			</>
+
+			// </Suspense>
 		);
 	}
 }

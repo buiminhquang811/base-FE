@@ -8,7 +8,7 @@ import {
 	UnorderedListOutlined
 } from '@ant-design/icons';
 import './AuthLayout.scss';
-import { getLoggedInUser } from "../helpers/authUtils";
+import { getLoggedInUser } from "../../helpers/authUtils";
 import Avatar from "antd/lib/avatar/avatar";
 
 const loading = () => <div className="text-center"></div>;
