@@ -1,6 +1,6 @@
 import React, { Component, Suspense } from 'react';
-import { BrowserRouter, Routes } from 'react-router-dom';
-import { routes } from './routes';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { PrivateRoute, routes } from './routes';
 import Loadable from 'react-loadable';
 import TASLoading from './components/TASLoading/TASLoading';
 
@@ -16,7 +16,6 @@ const loading = () => TASLoading()
 
 // All layouts/containers
 const NonAuthLayout = Loadable({
-  delay: 500000,
   loader: () => import('./components/NonAuthLayout'),
   render(loaded, props) {
     let Component = loaded.default;
@@ -36,20 +35,6 @@ const AuthLayout = Loadable({
 
 configureFakeBackend();
 
-// /**
-//  * Exports the component with layout wrapped to it
-//  * @param {} WrappedComponent 
-//  */
-// const withLayout = (WrappedComponent) => {
-//   const HOC = class extends Component {
-//     render() {
-//       return <WrappedComponent {...this.props} />;
-//     }
-//   };
-
-//   return HOC;
-// }
-
 const App = () => {
   /**
  * Returns the layout component based on different properties
@@ -59,27 +44,28 @@ const App = () => {
     return isUserAuthenticated() ? AuthLayout : NonAuthLayout;
   };
 
-  const renderRouteHasChilds = (route) => {
+  const renderRoute = (route) => {
     const Layout = getLayout();
-    return !route.childs ? (
-      <route.route
+    return (
+      <Route
         key={route.name}
         path={route.path}
         exact={route.exact}
-        roles={route.roles}
         element={
           <Suspense key={route.name} fallback={loading()}>
             <Layout title={route.title}>
-              <route.component />
+              {route.type === 'PRIVATE' ? (
+                <PrivateRoute>
+                  <route.component />
+                </PrivateRoute>
+              ) : (
+                <route.component />
+              )}
             </Layout>
           </Suspense>
         }
       />
-    ) : (
-      <>
-        {route.childs.map(i => renderRouteHasChilds(i))}
-      </>
-    );
+    )
   }
 
   return (
@@ -87,7 +73,7 @@ const App = () => {
     <BrowserRouter>
       <React.Fragment>
         <Routes>
-          {routes.map((route) => renderRouteHasChilds(route))}
+          {routes.map((route) => renderRoute(route))}
         </Routes>
       </React.Fragment>
     </BrowserRouter>
