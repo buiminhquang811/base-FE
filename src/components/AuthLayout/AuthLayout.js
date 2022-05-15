@@ -1,123 +1,144 @@
-import React, { Component, Suspense } from "react";
-import { Layout, Menu } from 'antd';
-import { Link, withRouter } from "react-router-dom";
+import React, { Suspense, useEffect, useState } from "react";
+import { Breadcrumb, Dropdown, Layout, Menu } from 'antd';
+import { Link, Navigate, Outlet, useNavigate, withRouter } from "react-router-dom";
 import {
 	MenuUnfoldOutlined,
 	MenuFoldOutlined,
 	UserOutlined,
-	UnorderedListOutlined
+	DownOutlined
 } from '@ant-design/icons';
 import './AuthLayout.scss';
 import { getLoggedInUser } from "../../helpers/authUtils";
 import Avatar from "antd/lib/avatar/avatar";
+import CoreService from "../../services/CoreService";
+import CommonLoading from "../CommonLoading";
+import { LOCAL_STORAGE } from "../../utils/Constants";
 
 const loading = () => <div className="text-center"></div>;
+const menuItems = [
+	{ key: '/', icon: null, label: 'Trang chủ' },
+	{ key: '/example-component', icon: null, label: 'Example Component' },
+]
+
+const menuDropItems = [
+	{ key: 'sign-out', label: 'Đăng xuất' }
+]
+
 const { Header, Sider, Content } = Layout;
 
-class AuthLayout extends Component {
-	constructor(props) {
-		super(props);
-		this.state = {
-			collapsed: false,
-			selectedKeys: [],
-		};
+export default function AuthLayout(props) {
+	const [isLoading, setIsLoading] = useState(false)
+	const [collapsed, setCollapsed] = useState(false)
+	const [selectedKeys, setSelectedKeys] = useState([])
+	const [listBreadCrumb, setListBreadCrumb] = useState([])
+	const navigate = useNavigate();
+	// const [menuItems, setMenuItems] = useState([])
+
+	useEffect(() => {
+		const breadCrumbs = CoreService.getBreadCrumb()
+			.subscribe((value) => {
+				console.log(value)
+				if (value && value.length) {
+					setListBreadCrumb(value)
+				} else {
+					setListBreadCrumb([])
+				}
+			})
+		const subscription = CoreService.getLoading()
+			.subscribe((value) => {
+				setIsLoading(value)
+			})
+		return () => {
+			subscription.unsubscribe()
+			breadCrumbs.unsubscribe()
+		}
+	}, [])
+
+	const toggle = () => {
+		setCollapsed(!collapsed)
 	};
 
-	toggle = () => {
-		this.setState({
-			collapsed: !this.state.collapsed,
-		});
-	};
-
-	onSelect = (data) => {
-		this.setState({
-			selectedKeys: data.selectedKeys,
-		})
+	const onSelect = (data) => {
+		navigate(`${data.key}`)
+		setSelectedKeys(data.key)
 	}
 
-	signOut(e) {
-		e.preventDefault();
-		this.props.history.push("/login");
+	const onLogout = () => {
+		localStorage.removeItem(LOCAL_STORAGE.ACCESS_TOKEN);
+		localStorage.removeItem(LOCAL_STORAGE.AUTH_INFO);
+		navigate("/login");
 	}
 
-	render() {
-		// get the child view which we would like to render
-		const children = this.props.children || null;
-		const user = getLoggedInUser();
-		return (
-			<Layout>
-				<Sider trigger={null} collapsible collapsed={this.state.collapsed} style={{ height: 'auto', minHeight: '100vh' }}>
-					<div className="logo" />
-					<Menu theme="dark" mode="inline" selectedKeys={this.state.selectedKeys} onSelect={(data) => this.onSelect(data)}>
+	const onSelectDrop = (data) => {
+		if (data.key === 'sign-out') {
+			onLogout();
+		}
+	}
 
-						{/* <Menu.Item key="Category" icon={<UnorderedListOutlined />}>
-							<Link to="/admin/category">Category</Link>
-						</Menu.Item>
-						<Menu.Item key="Product" icon={<UnorderedListOutlined />}>
-							<Link to="/admin/product">Product</Link>
-						</Menu.Item>
-						<Menu.Item key="Producer" icon={<UnorderedListOutlined />}>
-							<Link to="/admin/producer">Producer</Link>
-						</Menu.Item>
-						<Menu.Item key="Order" icon={<UnorderedListOutlined />}>
-							<Link to="/admin/order">Order</Link>
-						</Menu.Item> */}
-
-
-						{/* <Menu.Item key="2" icon={<VideoCameraOutlined />}>
-              nav 2
-            </Menu.Item>
-            <Menu.Item key="3" icon={<UploadOutlined />}>
-              nav 3
-            </Menu.Item> */}
-					</Menu>
-				</Sider>
-				<Layout className="site-layout">
-					<Header className="site-layout-background-header" style={{ padding: 0 }}>
-						<div className="layout-header-admin">
-							<span>
-								{this.state.collapsed ?
-									<MenuUnfoldOutlined className="trigger" onClick={this.toggle} /> :
-									<MenuFoldOutlined className="trigger" onClick={this.toggle} />}
-							</span>
-							<div className="layout-header-user-info">
-								<div>
-									<Avatar icon={<UserOutlined />} />
-									<span style={{ marginLeft: '10px' }}>{user.userName}</span>
-								</div>
-								<div></div>
+	// get the child view which we would like to render
+	const user = getLoggedInUser();
+	console.log(listBreadCrumb)
+	return (
+		<Layout>
+			<Sider trigger={null} collapsible collapsed={collapsed} style={{ height: 'auto', minHeight: '100vh' }}>
+				<div className="logo" />
+				<Menu
+					selectedKeys={selectedKeys}
+					mode="inline"
+					style={{ borderRight: 0 }}
+					items={menuItems}
+					theme="dark"
+					onClick={onSelect}
+				/>
+			</Sider>
+			<Layout className="site-layout">
+				<Header className="site-layout-background-header" style={{ padding: 0 }}>
+					<div className="layout-header-admin">
+						<span>
+							{collapsed ?
+								<MenuUnfoldOutlined className="trigger" onClick={toggle} /> :
+								<MenuFoldOutlined className="trigger" onClick={toggle} />}
+						</span>
+						<div className="layout-header-user-info">
+							<div>
+								<Avatar icon={<UserOutlined />} style={{ marginRight: '10px' }} />
+								<Dropdown overlay={
+									<Menu items={menuDropItems} onClick={onSelectDrop} />
+								} trigger='click'>
+									<a className="ant-dropdown-link" onClick={e => e.preventDefault()}>
+										{user.username} <DownOutlined />
+									</a>
+								</Dropdown>
 							</div>
+							<div></div>
 						</div>
-					</Header>
-					<Content
-						className="site-layout-background"
-						style={{
-							margin: '24px 16px',
-							padding: 24,
-							minHeight: 280,
-						}}
-					>
-						<Suspense fallback={loading()}>{children}</Suspense>
-					</Content>
-				</Layout>
-
+					</div>
+				</Header>
+				<Content
+					className="site-layout-background"
+					style={{
+						margin: '24px 16px',
+						padding: 0,
+						minHeight: 280,
+					}}
+				>
+					<Breadcrumb style={{marginBottom: '10px'}}>
+						{listBreadCrumb && listBreadCrumb.length &&
+							(listBreadCrumb.map(item =>
+								<Breadcrumb.Item key={item.key}>
+									<Link to={item.to}>{item.label}</Link>
+								</Breadcrumb.Item>
+							))
+						}
+					</Breadcrumb>
+					<Outlet />
+				</Content>
 			</Layout>
 
-			// <div className="app">
-			//   header
-			//   <header id="topnav">
-			//     <Suspense fallback={loading()}>
-			//       this is top bar admin
-			//     </Suspense>
-			//   </header>
-
-			//   <div className="wrapper">
-			//     <Suspense fallback={loading()}>{children}</Suspense>
-			//   </div>
-
-			// </div>
-		);
-	}
+			{
+				isLoading && <CommonLoading />
+			}
+		</Layout>
+	)
 }
 
-export default AuthLayout;

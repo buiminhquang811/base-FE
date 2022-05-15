@@ -2,13 +2,12 @@ export function configureFakeBackend() {
 	let users = [{ id: 1, username: 'test', password: 'test', firstName: 'Test', lastName: 'User', role: 'Admin' }];
 	let realFetch = window.fetch;
 	window.fetch = function (url, opts) {
+		console.log(url)
 		return new Promise((resolve, reject) => {
 			// wrap in timeout to simulate server api call
 			setTimeout(() => {
-
 				// authenticate
 				if (url.endsWith('/users/authenticate') && opts.method === 'POST') {
-					debugger;
 					// get parameters from post request
 					let params = JSON.parse(opts.body);
 

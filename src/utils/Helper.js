@@ -17,3 +17,7 @@ export function processParams(url, params = {}, useURLSearchParams = true) {
 		})
 	return url
 }
+
+export function isNotNullOrUndefined(data) {
+    return data !== null && data !== undefined
+}

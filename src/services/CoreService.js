@@ -2,7 +2,8 @@ import { Subject } from 'rxjs'
 import { NOTIFICATION_TYPE, NOTIFICATION_MESSAGE } from '../utils/Constants'
 import { notification } from 'antd'
 
-const commonLoading = new Subject()
+const commonLoading = new Subject();
+const listenBreadCrumbChange = new Subject();
 
 // export const showAlertSuccess = (message = '') => toast.success(message, DEFAULT_TOAST_OPTIONS)
 // export const showAlertError = (message = '') => toast.error(message, DEFAULT_TOAST_OPTIONS)
@@ -31,6 +32,12 @@ const CoreService = {
 	getLoading: () => {
 		return commonLoading.asObservable()
 	},
+	transferBreadCrumb: (list) => {
+		listenBreadCrumbChange.next(list)
+	},
+	getBreadCrumb: () => {
+		return listenBreadCrumbChange.asObservable()
+	}
 }
 
 export default CoreService

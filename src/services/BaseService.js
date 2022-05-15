@@ -13,7 +13,7 @@ function getAccessToken() {
 }
 
 const instance = axios.create({
-	baseURL: process.env.REACT_APP_API_ENDPOINT || 'http://localhost:3003/',
+	baseURL: process.env.REACT_APP_API_ENDPOINT,
 	headers: {
 		common: {
 			'Content-Type': 'application/json',
@@ -22,7 +22,7 @@ const instance = axios.create({
 })
 
 const instanceFormData = axios.create({
-	baseURL: process.env.REACT_APP_API_ENDPOINT || 'http://localhost:3003/',
+	baseURL: process.env.REACT_APP_API_ENDPOINT,
 	headers: {
 		common: {
 			'Content-Type': 'multipart/form-data',
@@ -32,6 +32,11 @@ const instanceFormData = axios.create({
 })
 
 const handleError = (error = {}) => {
+	if (error.response.status === 404) {
+		CoreService.showAlertError(UNKNOWN_ERROR_MESSAGE)
+		return
+	}
+
 	if (error.response) {
 		CoreService.showAlertError(error.response.data.message)
 		return
